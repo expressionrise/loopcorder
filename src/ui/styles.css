@@ -1,0 +1,126 @@
+/* Layout: one column, a guitar-pedal "stompbox" in the middle, tracks and mix recorder below */
+:root{
+  --bg:#16171a; --panel:#202227; --panel-2:#2a2d33; --line:#3a3e46;
+  --fg:#ecebe6; --muted:#9a9a93; --led:#ffb547; --rec:#ff4d3d; --ok:#5fd18b;
+  --display:"Unbounded",system-ui,sans-serif; --body:"Manrope",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{background:var(--bg);color:var(--fg)}
+body{margin:0;font:15px/1.5 var(--body);padding-block:max(16px,env(safe-area-inset-top)) max(32px,env(safe-area-inset-bottom));padding-inline:16px;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+h1{font:700 22px/1.1 var(--display);margin:0;letter-spacing:.01em}
+h1 span{color:var(--led)}
+.status{font:500 12px var(--mono);color:var(--muted);text-align:right}
+h2{font:500 12px var(--display);text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin:0}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:14px}
+button{font:600 15px var(--body);color:var(--fg);background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;touch-action:manipulation}
+button:disabled{opacity:.4;cursor:default}
+button:focus-visible,input:focus-visible{outline:2px solid var(--led);outline-offset:2px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.row>button{flex:1}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.seg button{border:0;background:transparent;color:var(--muted);padding:10px}
+.seg button[aria-pressed="true"]{background:var(--panel-2);color:var(--fg);box-shadow:inset 0 0 0 1px var(--line)}
+.metro{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field label,.lbl{font-size:12px;color:var(--muted);letter-spacing:.04em}
+.stepper{display:flex;align-items:center;gap:6px}
+.stepper button{padding:8px 0;width:40px;flex:none}
+.stepper input{width:100%;min-width:0;text-align:center;font:500 20px var(--mono);background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:10px;padding:6px 0}
+.chips{display:flex;gap:6px}
+.chips button{flex:1;padding:9px 0;font-family:var(--mono)}
+.chips button[aria-pressed="true"]{border-color:var(--led);color:var(--led)}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px}
+.switch{appearance:none;width:46px;height:28px;border-radius:14px;background:var(--panel-2);border:1px solid var(--line);position:relative;flex:none;cursor:pointer;margin:0}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--muted);transition:transform .15s}
+.switch:checked{background:#4a3a1c;border-color:var(--led)}
+.switch:checked::after{transform:translateX(18px);background:var(--led)}
+
+/* stompbox */
+.box{background:linear-gradient(180deg,#2b2e35,#1d1f24);border:1px solid var(--line);border-radius:22px;padding:22px 16px 18px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.leds{display:flex;gap:10px;min-height:12px}
+.leds i{width:12px;height:12px;border-radius:50%;background:#3a3326;box-shadow:inset 0 1px 2px #0008}
+.leds i.on{background:var(--led);box-shadow:0 0 10px var(--led)}
+.leds i.on.down{background:var(--rec);box-shadow:0 0 10px var(--rec)}
+.pedal{position:relative;width:min(230px,70vw);aspect-ratio:1;max-width:100%}
+.pedal svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+.pedal .track{stroke:#ffffff14}
+.pedal .prog{stroke:var(--led);transition:stroke .2s}
+.pedal.rec .prog{stroke:var(--rec)}
+#pedalBtn{position:absolute;inset:14%;border-radius:50%;border:0;background:radial-gradient(circle at 35% 30%,#4b4f58,#24262b 70%);box-shadow:0 6px 0 #0d0e10,0 10px 24px #0009,inset 0 1px 0 #ffffff22;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px;text-align:center}
+#pedalBtn:active{transform:translateY(4px);box-shadow:0 2px 0 #0d0e10,0 4px 10px #0009,inset 0 1px 0 #ffffff22}
+#pedalBtn .big{font:700 17px/1.15 var(--display);letter-spacing:.04em}
+#pedalBtn .small{font-size:12px;color:var(--muted);line-height:1.3;max-width:13ch}
+.pedal.rec #pedalBtn .big{color:var(--rec)}
+.pedal.armed #pedalBtn .big{color:var(--led)}
+.counter{font:500 13px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.meter{width:100%;height:6px;border-radius:3px;background:var(--bg);overflow:hidden}
+.meter b{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ok),var(--led) 75%,var(--rec));transition:width .05s}
+
+/* tracks */
+.tracks{display:flex;flex-direction:column;gap:10px}
+.empty{color:var(--muted);font-size:14px;margin:0}
+.tr{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px}
+.tr .n{font:500 13px var(--mono);color:var(--led);width:22px;text-align:center}
+.tr.muted .n{color:var(--muted)}
+.tr .mid{display:flex;flex-direction:column;gap:6px;min-width:0}
+.tr canvas{width:100%;height:30px;display:block}
+.tr.muted canvas{opacity:.35}
+.tr input[type=range]{width:100%;accent-color:var(--led);margin:0}
+.tr button{padding:8px 10px;font-size:13px}
+.tr button.m[aria-pressed="true"]{color:var(--led);border-color:var(--led)}
+
+/* mix */
+#mixBtn{font:700 15px var(--display);padding:16px;letter-spacing:.03em}
+#mixBtn.on{background:#3a1714;border-color:var(--rec);color:var(--rec)}
+.takes{display:flex;flex-direction:column;gap:10px}
+.take{display:flex;flex-direction:column;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px}
+.take .top{display:flex;justify-content:space-between;gap:10px;font:500 13px var(--mono)}
+.take a{color:var(--led)}
+.take audio{width:100%;height:36px}
+.note{font-size:13px;color:var(--muted);margin:0}
+.note b{color:var(--fg)}
+details summary{cursor:pointer;font:500 12px var(--display);text-transform:uppercase;letter-spacing:.12em;color:var(--muted);list-style:none}
+details summary::after{content:" +"}
+details[open] summary::after{content:" −"}
+details[open]{display:flex;flex-direction:column;gap:12px}
+.lat{display:flex;align-items:center;gap:10px}
+.lat input{flex:1;accent-color:var(--led)}
+.lat output{font:500 14px var(--mono);width:64px;text-align:right}
+#start{display:flex;flex-direction:column;gap:14px}
+#startBtn{background:var(--led);color:#1b1608;border:0;font:700 16px var(--display);padding:18px}
+.err{color:var(--rec);font-size:14px;margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* touch targets: at least 48px */
+button{min-height:48px}
+.stepper button{width:48px}
+.stepper input{min-height:48px}
+.chips button{min-height:48px}
+.tr{grid-template-columns:auto 1fr auto auto}
+.tr button{min-height:48px;min-width:48px}
+.switch{width:52px;height:32px;border-radius:16px}
+.switch::after{width:24px;height:24px}
+.switch:checked::after{transform:translateX(20px)}
+.lat input{min-height:48px}
+.tr input[type=range]{min-height:32px}
+
+/* pedal states */
+#pedalBtn:disabled{opacity:1;filter:brightness(.8)}
+.pedal.armed .prog{stroke:var(--led)}
+.pedal.armed #pedalBtn .big{animation:pulse 1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+
+/* projects */
+.proj-name{width:100%;min-height:48px;font:600 15px var(--body);color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.projects{display:flex;flex-direction:column;gap:10px}
+.proj{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px}
+.proj .nm{min-width:0;display:flex;flex-direction:column}
+.proj .nm b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.proj .nm span{font:500 12px var(--mono);color:var(--muted)}
+.proj button{padding:8px 10px;font-size:13px;min-width:48px}
+.proj button.del{color:var(--rec)}
+.proj.cur{border-color:var(--led)}

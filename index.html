@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#16171a">
+<meta name="description" content="Loopcorder – mobilny looper audio w przeglądarce.">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Loopcorder</title>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Loop<span>corder</span></h1>
+    <div class="status" id="status">gotowa</div>
+  </header>
+
+  <section class="panel" id="start">
+    <p class="note">Nagrywasz pętlę, potem kolejne warstwy nakładają się równo na nią. Na końcu nagrywasz całość do pliku WAV.</p>
+    <p class="note"><b>Załóż słuchawki.</b> Bez nich mikrofon zbiera dźwięk z głośnika i pętle nagrywają same siebie.</p>
+    <button id="startBtn">Włącz mikrofon</button>
+    <p class="err" id="startErr" hidden></p>
+  </section>
+
+  <div id="app" hidden style="display:contents">
+    <section class="panel" id="setup">
+      <div class="seg" role="group" aria-label="Tryb">
+        <button id="modeFree" aria-pressed="true">Bez metronomu</button>
+        <button id="modeMetro" aria-pressed="false">Z metronomem</button>
+      </div>
+      <p class="note" id="freeNote">Pierwsza pętla: dotknij, żeby zacząć, i dotknij jeszcze raz, żeby ją zamknąć. Jej długość ustala tempo.</p>
+      <div id="metroBox" hidden style="display:contents">
+        <div class="metro">
+          <div class="field">
+            <label for="bpm">Tempo (BPM)</label>
+            <div class="stepper">
+              <button id="bpmDown" aria-label="Wolniej">−</button>
+              <input id="bpm" type="number" inputmode="numeric" min="40" max="240" value="90">
+              <button id="bpmUp" aria-label="Szybciej">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <span class="lbl">Długość pętli (takty 4/4)</span>
+            <div class="chips" id="bars">
+              <button data-b="1" aria-pressed="false">1</button>
+              <button data-b="2" aria-pressed="true">2</button>
+              <button data-b="4" aria-pressed="false">4</button>
+              <button data-b="8" aria-pressed="false">8</button>
+            </div>
+          </div>
+        </div>
+        <label class="toggle" for="clickOn">Słychać klik podczas grania
+          <input type="checkbox" class="switch" id="clickOn" checked>
+        </label>
+        <p class="note">Przed pierwszą pętlą jest jeden takt odliczania. Pętla zamyka się sama po wybranej liczbie taktów.</p>
+      </div>
+    </section>
+
+    <section class="box">
+      <div class="leds" id="leds"></div>
+      <div class="pedal" id="pedal">
+        <svg viewBox="0 0 100 100" aria-hidden="true">
+          <circle class="track" cx="50" cy="50" r="46" fill="none" stroke-width="4"></circle>
+          <circle class="prog" id="ring" cx="50" cy="50" r="46" fill="none" stroke-width="4" stroke-linecap="round" stroke-dasharray="289.03" stroke-dashoffset="289.03"></circle>
+        </svg>
+        <button id="pedalBtn"><span class="big" id="pBig">NAGRAJ</span><span class="small" id="pSmall">pierwsza pętla</span></button>
+      </div>
+      <div class="counter" id="counter">—</div>
+      <div class="meter" title="Poziom mikrofonu"><b id="meter"></b></div>
+      <div class="row" style="width:100%">
+        <button id="playBtn" disabled>■ Stop</button>
+        <button id="undoBtn" disabled>Cofnij</button>
+        <button id="clearBtn" disabled>Wyczyść</button>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Ścieżki</h2>
+      <div class="tracks" id="tracks"><p class="empty">Nie ma jeszcze żadnej pętli.</p></div>
+    </section>
+
+    <section class="panel">
+      <h2>Nagraj całość</h2>
+      <p class="note">Nagrywa to, co słychać w pętlach (bez kliku), także gdy w trakcie wyciszasz albo dokładasz ścieżki.</p>
+      <label class="toggle" for="liveMic">Dołącz mikrofon na żywo (np. śpiew na pętlach)
+        <input type="checkbox" class="switch" id="liveMic">
+      </label>
+      <button id="mixBtn">● Nagraj całość</button>
+      <div class="takes" id="takes"></div>
+    </section>
+
+    <section class="panel">
+      <details>
+        <summary>Opóźnienie</summary>
+        <p class="note">Jeśli nowe warstwy są lekko spóźnione względem pętli, zwiększ wartość. Kalibracja zrobi to sama: <b>zdejmij słuchawki</b>, podgłośnij telefon i bądź cicho przez 4 sekundy.</p>
+        <div class="lat">
+          <input type="range" id="lat" min="0" max="400" step="1" aria-label="Opóźnienie w milisekundach">
+          <output id="latOut">0 ms</output>
+        </div>
+        <button id="calBtn">Kalibruj</button>
+        <p class="note" id="calMsg"></p>
+      </details>
+    </section>
+
+    <section class="panel">
+      <h2>Projekty</h2>
+      <input class="proj-name" id="projName" type="text" maxlength="60" placeholder="Nazwa projektu" aria-label="Nazwa projektu">
+      <button id="saveBtn" disabled>Zapisz projekt</button>
+      <p class="note" id="projMsg"></p>
+      <div class="projects" id="projects"></div>
+    </section>
+  </div>
+</div>
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
