@@ -50,3 +50,20 @@ export function resampleLinear(data, fromRate, toRate) {
   }
   return out;
 }
+
+/**
+ * Trim a loop layer: keep [a, b) (fractions of the length) and silence the rest,
+ * with short fades at the cut points. The length stays the same so the layer stays on the loop grid.
+ */
+export function applyTrim(src, a, b, fadeFrames) {
+  const len = src.length;
+  const out = new Float32Array(len);
+  const ia = Math.max(0, Math.min(len, Math.round(a * len)));
+  const ib = Math.max(ia, Math.min(len, Math.round(b * len)));
+  out.set(src.subarray(ia, ib), ia);
+  const f = Math.min((ib - ia) >> 2, fadeFrames);
+  // No fade at the loop seam itself (a = 0 / b = 1) - the seam already has edge fades.
+  if (ia > 0) for (let i = 0; i < f; i++) out[ia + i] *= i / f;
+  if (ib < len) for (let i = 0; i < f; i++) out[ib - 1 - i] *= i / f;
+  return out;
+}

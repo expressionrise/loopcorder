@@ -12,6 +12,7 @@ Part of the *-corder* family of tools by [ExpressionRise](https://expressionrise
   - **Free mode:** tap to start, tap again to close the loop. The first loop sets the length.
   - **Metronome mode:** pick the BPM (40–240) and the loop length (1, 2, 4 or 8 bars of 4/4). After a one-bar count-in the loop records and closes on its own. The click can be switched off while you play.
 - **Sample-accurate layering:** every new layer starts on the next loop boundary and records exactly one loop length.
+- **Trim a layer:** *Przytnij* opens a waveform with start and end handles. Sound outside the range is silenced (with short fades) while the layer keeps the full loop length, so it stays in sync. The original recording is kept, so you can widen the range again.
 - **Track controls:** volume, mute, delete, undo last layer, clear all (with confirmation), play/stop, and a waveform for each track.
 - **Projects:** save, load, rename and delete projects. They are stored on the device in IndexedDB (tracks as 16-bit WAV, plus mode, BPM, bars, volumes and mutes).
 - **Record the whole mix** to a 16-bit stereo WAV file, with the metronome click left out. You can include the live microphone, for example to sing over your loops.

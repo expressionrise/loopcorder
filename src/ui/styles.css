@@ -124,3 +124,20 @@ button{min-height:48px}
 .proj button{padding:8px 10px;font-size:13px;min-width:48px}
 .proj button.del{color:var(--rec)}
 .proj.cur{border-color:var(--led)}
+
+/* track actions + trim editor */
+.tr{grid-template-columns:auto 1fr;align-items:start}
+.tr .acts{display:flex;gap:8px}
+.tr .acts button{flex:1;padding:8px 6px}
+.tr .acts .d{flex:none;min-width:48px;color:var(--rec)}
+.tr button.t[aria-pressed="true"]{color:var(--led);border-color:var(--led)}
+.trim{display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line);padding-top:10px}
+.trim .tw{position:relative}
+.trim canvas{height:56px;width:100%;display:block}
+.tr.muted .trim canvas{opacity:1}
+.trim .sh{position:absolute;top:0;bottom:0;background:#0b0c0ecc;pointer-events:none;border:0 solid var(--led)}
+.trim .sh.l{left:0;width:0;border-right-width:2px}
+.trim .sh.r{right:0;width:0;border-left-width:2px}
+.trim label{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font-size:12px;color:var(--muted)}
+.trim label output{justify-self:end;font:500 13px var(--mono);color:var(--fg)}
+.trim label input{grid-column:1/-1;width:100%;accent-color:var(--led);margin:0;min-height:40px}

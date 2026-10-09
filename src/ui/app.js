@@ -1,7 +1,7 @@
 // DOM wiring: reads/writes S, calls session actions. UI strings are Polish.
 import { S, onChange, emit } from '../state.js';
 import { engine, initEngine, nowF, requestWake, watchVisibility } from '../audio/engine.js';
-import { applyGain } from '../audio/playback.js';
+import { applyGain, setTrim } from '../audio/playback.js';
 import { beatSec, clampBpm } from '../metronome.js';
 import { loopPosition } from '../audio/timing.js';
 import { pedalPress, advance, removeTrack, clearAll, togglePlay, calibrate, scheduler, setLat } from '../session.js';
@@ -136,6 +136,8 @@ function showTake({ blob, seconds }) {
 }
 
 /* ---------- tracks ---------- */
+const trimOpen = new Set(); // track ids whose trim editor is expanded
+
 function drawTracks() {
   const box = $('#tracks');
   box.textContent = '';
@@ -149,8 +151,9 @@ function drawTracks() {
   S.tracks.forEach((t, i) => {
     const el = document.createElement('div');
     el.className = 'tr' + (t.muted ? ' muted' : '');
-    el.innerHTML = `<span class="n">${i + 1}</span><div class="mid"><canvas></canvas><input type="range" min="0" max="1.5" step="0.01" value="${t.vol}" aria-label="Głośność ścieżki ${i + 1}"></div><button class="m" aria-pressed="${t.muted}">Wycisz</button><button class="d" aria-label="Usuń ścieżkę ${i + 1}">✕</button>`;
-    el.querySelector('input').oninput = (e) => {
+    const trimmed = t.trim.a > 0 || t.trim.b < 1;
+    el.innerHTML = `<span class="n">${i + 1}</span><div class="mid"><canvas></canvas><input class="vol" type="range" min="0" max="1.5" step="0.01" value="${t.vol}" aria-label="Głośność ścieżki ${i + 1}"><div class="acts"><button class="m" aria-pressed="${t.muted}">Wycisz</button><button class="t" aria-pressed="${trimOpen.has(t.id)}">${trimmed ? 'Przycięta ✂' : 'Przytnij ✂'}</button><button class="d" aria-label="Usuń ścieżkę ${i + 1}">✕</button></div></div>`;
+    el.querySelector('.vol').oninput = (e) => {
       t.vol = +e.target.value;
       applyGain(t);
     };
@@ -159,14 +162,68 @@ function drawTracks() {
       applyGain(t);
       drawTracks();
     };
-    el.querySelector('.d').onclick = () => removeTrack(t.id);
+    el.querySelector('.d').onclick = () => {
+      trimOpen.delete(t.id);
+      removeTrack(t.id);
+    };
+    el.querySelector('.t').onclick = () => {
+      if (trimOpen.has(t.id)) trimOpen.delete(t.id);
+      else trimOpen.add(t.id);
+      drawTracks();
+    };
     box.append(el);
     wave(el.querySelector('canvas'), t.data);
+    if (trimOpen.has(t.id)) el.querySelector('.mid').append(trimEditor(t));
   });
 }
-function wave(cv, d) {
+
+/** Editor with two handles: everything outside [start, end) of the loop is silenced. */
+function trimEditor(t) {
+  const MIN_GAP = 20; // out of 1000 steps
+  const secs = (v) => fmt((v / 1000) * (t.source.length / engine.sr));
+  const ed = document.createElement('div');
+  ed.className = 'trim';
+  ed.innerHTML = `<div class="tw"><canvas></canvas><i class="sh l"></i><i class="sh r"></i></div>
+    <label>Początek <output class="oa"></output><input class="ra" type="range" min="0" max="1000" step="1" aria-label="Początek nagrania"></label>
+    <label>Koniec <output class="ob"></output><input class="rb" type="range" min="0" max="1000" step="1" aria-label="Koniec nagrania"></label>
+    <div class="row"><button class="reset">Cała pętla</button></div>`;
+  const ra = ed.querySelector('.ra');
+  const rb = ed.querySelector('.rb');
+  ra.value = Math.round(t.trim.a * 1000);
+  rb.value = Math.round(t.trim.b * 1000);
+  const paint = () => {
+    ed.querySelector('.sh.l').style.width = ra.value / 10 + '%';
+    ed.querySelector('.sh.r').style.width = (1000 - rb.value) / 10 + '%';
+    ed.querySelector('.oa').textContent = secs(+ra.value);
+    ed.querySelector('.ob').textContent = secs(+rb.value);
+  };
+  // Live preview of the handles while dragging; the audio is re-cut on release.
+  ra.oninput = () => {
+    if (+ra.value > rb.value - MIN_GAP) ra.value = rb.value - MIN_GAP;
+    paint();
+  };
+  rb.oninput = () => {
+    if (+rb.value < +ra.value + MIN_GAP) rb.value = +ra.value + MIN_GAP;
+    paint();
+  };
+  const commit = () => {
+    setTrim(t, ra.value / 1000, rb.value / 1000);
+    drawTracks();
+  };
+  ra.onchange = rb.onchange = commit;
+  ed.querySelector('.reset').onclick = () => {
+    ra.value = 0;
+    rb.value = 1000;
+    commit();
+  };
+  requestAnimationFrame(() => {
+    wave(ed.querySelector('canvas'), t.source, 56);
+    paint();
+  });
+  return ed;
+}
+function wave(cv, d, h = 30) {
   const w = cv.clientWidth || 240;
-  const h = 30;
   const dpr = devicePixelRatio || 1;
   cv.width = w * dpr;
   cv.height = h * dpr;

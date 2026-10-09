@@ -19,7 +19,7 @@ export async function saveCurrent(name) {
     name: name || existing?.name || 'Bez nazwy',
     settings: { mode: S.mode, bpm: S.bpm, bars: S.bars, clickOn: S.clickOn },
     sampleRate: engine.sr,
-    tracks: S.tracks.map((t) => ({ wav: encodeWav([t.data], engine.sr), vol: t.vol, muted: t.muted })),
+    tracks: S.tracks.map((t) => ({ wav: encodeWav([t.source], engine.sr), vol: t.vol, muted: t.muted, trim: t.trim })),
   });
   currentProjectId = id;
   return id;
@@ -32,7 +32,7 @@ export async function loadProject(id) {
   Object.assign(S, rec.settings);
   const decoded = rec.tracks.map((t) => {
     const { channels, sampleRate } = decodeWav(t.wav);
-    return { data: resampleLinear(channels[0], sampleRate, engine.sr), vol: t.vol, muted: t.muted };
+    return { data: resampleLinear(channels[0], sampleRate, engine.sr), vol: t.vol, muted: t.muted, trim: t.trim };
   });
   const L = decoded[0].data.length;
   const T0 = nowF();
@@ -42,7 +42,7 @@ export async function loadProject(id) {
     S.beatIdx = 0;
     S.nextBeat = S.grid;
   }
-  decoded.forEach((t) => addTrack(t.data, { vol: t.vol, muted: t.muted }));
+  decoded.forEach((t) => addTrack(t.data, { vol: t.vol, muted: t.muted, trim: t.trim }));
   currentProjectId = id;
   emit();
 }
